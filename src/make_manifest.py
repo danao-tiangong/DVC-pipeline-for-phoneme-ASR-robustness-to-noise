@@ -1,11 +1,15 @@
 import os, json, hashlib, subprocess, glob, shutil
 import soundfile as sf
+import yaml
 
-LANG = "en"
+with open("params.yaml") as f:
+    params = yaml.safe_load(f)
+
+LANG = params["lang"]
 WAV_DIR = f"data/raw/{LANG}/wav"
 OUT_DIR = f"data/manifests/{LANG}"
 OUT_FILE = os.path.join(OUT_DIR, "clean.jsonl")
-LIBRI_DIR = "data/raw/LibriSpeech/test-clean"
+LIBRI_DIR = f"data/raw/LibriSpeech/test-clean"
 
 def load_transcripts():
     transcripts = {}
@@ -35,7 +39,7 @@ def main():
     transcripts = load_transcripts()
     libri_keys = sorted(transcripts.keys())
     wav_files = sorted(glob.glob(os.path.join(WAV_DIR, "*.wav")))
-    print(f"找到 {len(wav_files)} 个 wav 文件")
+    print(f"[make_manifest] lang={LANG}, {len(wav_files)} fichiers wav")
 
     tmp_file = OUT_FILE + ".tmp"
     with open(tmp_file, "w", encoding="utf-8") as f:
@@ -53,10 +57,10 @@ def main():
                 "audio_md5": audio_md5, "snr_db": None,
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            print(f"  [{i+1}/{len(wav_files)}] {utt_id} | {ref_phon[:50]}")
+            print(f"  [{i+1}/{len(wav_files)}] {utt_id}")
 
     shutil.move(tmp_file, OUT_FILE)
-    print(f"\n完成！manifest 写入 {OUT_FILE}")
+    print(f"[make_manifest] done -> {OUT_FILE}")
 
 if __name__ == "__main__":
     main()

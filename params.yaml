@@ -1,0 +1,8 @@
+lang: en
+langs:
+  - en
+snr_levels: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
+n_samples: 50
+noise_seed: 42
+model_id: facebook/wav2vec2-lv-60-espeak-cv-ft
+target_sr: 16000

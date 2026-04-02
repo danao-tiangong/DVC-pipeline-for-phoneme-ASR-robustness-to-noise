@@ -1,6 +1,8 @@
 stages:
   make_manifest:
     cmd: python3 src/make_manifest.py
+    params:
+      - lang
     deps:
       - src/make_manifest.py
       - data/raw/en/wav
@@ -9,6 +11,10 @@ stages:
 
   add_noise:
     cmd: python3 src/add_noise.py
+    params:
+      - lang
+      - snr_levels
+      - noise_seed
     deps:
       - src/add_noise.py
       - data/manifests/en/clean.jsonl
@@ -26,6 +32,10 @@ stages:
 
   run_inference:
     cmd: python3 src/run_inference.py
+    params:
+      - lang
+      - model_id
+      - snr_levels
     deps:
       - src/run_inference.py
       - data/manifests/en/clean.jsonl
@@ -54,6 +64,9 @@ stages:
 
   evaluate:
     cmd: python3 src/evaluate.py
+    params:
+      - lang
+      - snr_levels
     deps:
       - src/evaluate.py
       - data/predictions/en/clean.jsonl
@@ -73,6 +86,8 @@ stages:
 
   plot:
     cmd: python3 src/plot_results.py
+    params:
+      - langs
     deps:
       - src/plot_results.py
       - data/metrics/en_per.json

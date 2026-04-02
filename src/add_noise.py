@@ -1,11 +1,15 @@
-import os, json, shutil, glob
+import os, json, shutil
 import numpy as np
 import soundfile as sf
+import yaml
 
-SNR_LEVELS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
-LANG = "en"
+with open("params.yaml") as f:
+    params = yaml.safe_load(f)
+
+LANG = params["lang"]
+SNR_LEVELS = params["snr_levels"]
+SEED = params["noise_seed"]
 CLEAN_MANIFEST = f"data/manifests/{LANG}/clean.jsonl"
-SEED = 42
 
 def add_noise(signal, snr_db, rng):
     signal_power = np.mean(signal ** 2)
@@ -22,38 +26,40 @@ def add_noise_to_file(input_wav, output_wav, snr_db, seed=None):
     noisy_signal = add_noise(signal, snr_db, rng)
     sf.write(output_wav, noisy_signal, sr)
 
+def file_md5(path):
+    import hashlib
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        h.update(f.read())
+    return h.hexdigest()
+
 def main():
-    # 读取 clean manifest
     with open(CLEAN_MANIFEST) as f:
         records = [json.loads(line) for line in f]
 
+    print(f"[add_noise] lang={LANG}, SNR levels={SNR_LEVELS}")
+
     for snr in SNR_LEVELS:
         out_wav_dir = f"data/raw/{LANG}/noisy/snr_{snr}"
-        out_manifest_dir = f"data/manifests/{LANG}"
-        out_manifest = os.path.join(out_manifest_dir, f"noisy_snr{snr}.jsonl")
+        out_manifest = f"data/manifests/{LANG}/noisy_snr{snr}.jsonl"
         os.makedirs(out_wav_dir, exist_ok=True)
-        os.makedirs(out_manifest_dir, exist_ok=True)
 
-        print(f"\nSNR = {snr} dB")
         tmp_manifest = out_manifest + ".tmp"
-
         with open(tmp_manifest, "w") as f:
             for rec in records:
                 stem = os.path.basename(rec["wav_path"])
                 noisy_wav = os.path.join(out_wav_dir, stem)
-
                 add_noise_to_file(rec["wav_path"], noisy_wav, snr_db=snr, seed=SEED)
-
                 new_rec = dict(rec)
                 new_rec["wav_path"] = noisy_wav
                 new_rec["snr_db"] = snr
+                new_rec["audio_md5"] = file_md5(noisy_wav)
                 f.write(json.dumps(new_rec, ensure_ascii=False) + "\n")
-                print(f"  {rec['utt_id']} -> {noisy_wav}")
 
         shutil.move(tmp_manifest, out_manifest)
-        print(f"  manifest -> {out_manifest}")
+        print(f"  SNR={snr}dB -> {out_manifest}")
 
-    print("\n完成！所有噪声等级处理完毕")
+    print("[add_noise] done")
 
 if __name__ == "__main__":
     main()
