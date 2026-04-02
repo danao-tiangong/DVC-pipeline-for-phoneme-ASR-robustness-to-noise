@@ -1,6 +1,12 @@
 .venv/
 data/raw/
+data/manifests/
+data/predictions/
+data/metrics/
+data/plots/
 *.wav
+*.mp3
+*.flac
 __pycache__/
 *.pyc
 .DS_Store
