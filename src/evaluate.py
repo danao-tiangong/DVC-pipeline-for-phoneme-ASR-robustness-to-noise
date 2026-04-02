@@ -1,11 +1,15 @@
-import os, json
+import os, json, argparse
 import editdistance
 import yaml
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--lang", required=True)
+args = parser.parse_args()
 
 with open("params.yaml") as f:
     params = yaml.safe_load(f)
 
-LANG = params["lang"]
+LANG = args.lang
 SNR_LEVELS = params["snr_levels"]
 PRED_DIR = f"data/predictions/{LANG}"
 METRICS_DIR = "data/metrics"
@@ -39,14 +43,14 @@ def eval_manifest(pred_path):
 results = {}
 per = eval_manifest(f"{PRED_DIR}/clean.jsonl")
 results["clean"] = {"snr_db": None, "per": round(per, 4)}
-print(f"[evaluate] clean -> PER={per:.4f}")
+print(f"[evaluate] {LANG} clean -> PER={per:.4f}")
 
 for snr in SNR_LEVELS:
     per = eval_manifest(f"{PRED_DIR}/noisy_snr{snr}.jsonl")
     results[f"snr_{snr}"] = {"snr_db": snr, "per": round(per, 4)}
-    print(f"[evaluate] SNR={snr:2d}dB -> PER={per:.4f}")
+    print(f"[evaluate] {LANG} SNR={snr:2d}dB -> PER={per:.4f}")
 
 out_path = f"{METRICS_DIR}/{LANG}_per.json"
 with open(out_path, "w") as f:
     json.dump({LANG: results}, f, indent=2)
-print(f"[evaluate] metrics -> {out_path}")
+print(f"[evaluate] saved -> {out_path}")

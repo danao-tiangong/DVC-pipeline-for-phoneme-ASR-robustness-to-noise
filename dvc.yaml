@@ -1,88 +1,96 @@
 stages:
   make_manifest:
-    cmd: python3 src/make_manifest.py
-    params:
-      - lang
-    deps:
-      - src/make_manifest.py
-      - data/raw/en/wav
-    outs:
-      - data/manifests/en/clean.jsonl
+    foreach: ${langs}
+    do:
+      cmd: >-
+        python3 src/make_manifest.py --lang ${item}
+      params:
+        - snr_levels
+        - noise_seed
+      deps:
+        - src/make_manifest.py
+        - data/raw/${item}/wav
+      outs:
+        - data/manifests/${item}/clean.jsonl
 
   add_noise:
-    cmd: python3 src/add_noise.py
-    params:
-      - lang
-      - snr_levels
-      - noise_seed
-    deps:
-      - src/add_noise.py
-      - data/manifests/en/clean.jsonl
-    outs:
-      - data/manifests/en/noisy_snr0.jsonl
-      - data/manifests/en/noisy_snr5.jsonl
-      - data/manifests/en/noisy_snr10.jsonl
-      - data/manifests/en/noisy_snr15.jsonl
-      - data/manifests/en/noisy_snr20.jsonl
-      - data/manifests/en/noisy_snr25.jsonl
-      - data/manifests/en/noisy_snr30.jsonl
-      - data/manifests/en/noisy_snr35.jsonl
-      - data/manifests/en/noisy_snr40.jsonl
-      - data/manifests/en/noisy_snr45.jsonl
+    foreach: ${langs}
+    do:
+      cmd: python3 src/add_noise.py --lang ${item}
+      params:
+        - snr_levels
+        - noise_seed
+      deps:
+        - src/add_noise.py
+        - data/manifests/${item}/clean.jsonl
+      outs:
+        - data/manifests/${item}/noisy_snr0.jsonl
+        - data/manifests/${item}/noisy_snr5.jsonl
+        - data/manifests/${item}/noisy_snr10.jsonl
+        - data/manifests/${item}/noisy_snr15.jsonl
+        - data/manifests/${item}/noisy_snr20.jsonl
+        - data/manifests/${item}/noisy_snr25.jsonl
+        - data/manifests/${item}/noisy_snr30.jsonl
+        - data/manifests/${item}/noisy_snr35.jsonl
+        - data/manifests/${item}/noisy_snr40.jsonl
+        - data/manifests/${item}/noisy_snr45.jsonl
 
   run_inference:
-    cmd: python3 src/run_inference.py
-    params:
-      - lang
-      - model_id
-      - snr_levels
-    deps:
-      - src/run_inference.py
-      - data/manifests/en/clean.jsonl
-      - data/manifests/en/noisy_snr0.jsonl
-      - data/manifests/en/noisy_snr5.jsonl
-      - data/manifests/en/noisy_snr10.jsonl
-      - data/manifests/en/noisy_snr15.jsonl
-      - data/manifests/en/noisy_snr20.jsonl
-      - data/manifests/en/noisy_snr25.jsonl
-      - data/manifests/en/noisy_snr30.jsonl
-      - data/manifests/en/noisy_snr35.jsonl
-      - data/manifests/en/noisy_snr40.jsonl
-      - data/manifests/en/noisy_snr45.jsonl
-    outs:
-      - data/predictions/en/clean.jsonl
-      - data/predictions/en/noisy_snr0.jsonl
-      - data/predictions/en/noisy_snr5.jsonl
-      - data/predictions/en/noisy_snr10.jsonl
-      - data/predictions/en/noisy_snr15.jsonl
-      - data/predictions/en/noisy_snr20.jsonl
-      - data/predictions/en/noisy_snr25.jsonl
-      - data/predictions/en/noisy_snr30.jsonl
-      - data/predictions/en/noisy_snr35.jsonl
-      - data/predictions/en/noisy_snr40.jsonl
-      - data/predictions/en/noisy_snr45.jsonl
+    foreach: ${langs}
+    do:
+      cmd: python3 src/run_inference.py --lang ${item}
+      params:
+        - model_id
+        - snr_levels
+        - target_sr
+      deps:
+        - src/run_inference.py
+        - data/manifests/${item}/clean.jsonl
+        - data/manifests/${item}/noisy_snr0.jsonl
+        - data/manifests/${item}/noisy_snr5.jsonl
+        - data/manifests/${item}/noisy_snr10.jsonl
+        - data/manifests/${item}/noisy_snr15.jsonl
+        - data/manifests/${item}/noisy_snr20.jsonl
+        - data/manifests/${item}/noisy_snr25.jsonl
+        - data/manifests/${item}/noisy_snr30.jsonl
+        - data/manifests/${item}/noisy_snr35.jsonl
+        - data/manifests/${item}/noisy_snr40.jsonl
+        - data/manifests/${item}/noisy_snr45.jsonl
+      outs:
+        - data/predictions/${item}/clean.jsonl
+        - data/predictions/${item}/noisy_snr0.jsonl
+        - data/predictions/${item}/noisy_snr5.jsonl
+        - data/predictions/${item}/noisy_snr10.jsonl
+        - data/predictions/${item}/noisy_snr15.jsonl
+        - data/predictions/${item}/noisy_snr20.jsonl
+        - data/predictions/${item}/noisy_snr25.jsonl
+        - data/predictions/${item}/noisy_snr30.jsonl
+        - data/predictions/${item}/noisy_snr35.jsonl
+        - data/predictions/${item}/noisy_snr40.jsonl
+        - data/predictions/${item}/noisy_snr45.jsonl
 
   evaluate:
-    cmd: python3 src/evaluate.py
-    params:
-      - lang
-      - snr_levels
-    deps:
-      - src/evaluate.py
-      - data/predictions/en/clean.jsonl
-      - data/predictions/en/noisy_snr0.jsonl
-      - data/predictions/en/noisy_snr5.jsonl
-      - data/predictions/en/noisy_snr10.jsonl
-      - data/predictions/en/noisy_snr15.jsonl
-      - data/predictions/en/noisy_snr20.jsonl
-      - data/predictions/en/noisy_snr25.jsonl
-      - data/predictions/en/noisy_snr30.jsonl
-      - data/predictions/en/noisy_snr35.jsonl
-      - data/predictions/en/noisy_snr40.jsonl
-      - data/predictions/en/noisy_snr45.jsonl
-    metrics:
-      - data/metrics/en_per.json:
-          cache: false
+    foreach: ${langs}
+    do:
+      cmd: python3 src/evaluate.py --lang ${item}
+      params:
+        - snr_levels
+      deps:
+        - src/evaluate.py
+        - data/predictions/${item}/clean.jsonl
+        - data/predictions/${item}/noisy_snr0.jsonl
+        - data/predictions/${item}/noisy_snr5.jsonl
+        - data/predictions/${item}/noisy_snr10.jsonl
+        - data/predictions/${item}/noisy_snr15.jsonl
+        - data/predictions/${item}/noisy_snr20.jsonl
+        - data/predictions/${item}/noisy_snr25.jsonl
+        - data/predictions/${item}/noisy_snr30.jsonl
+        - data/predictions/${item}/noisy_snr35.jsonl
+        - data/predictions/${item}/noisy_snr40.jsonl
+        - data/predictions/${item}/noisy_snr45.jsonl
+      metrics:
+        - data/metrics/${item}_per.json:
+            cache: false
 
   plot:
     cmd: python3 src/plot_results.py
@@ -91,6 +99,7 @@ stages:
     deps:
       - src/plot_results.py
       - data/metrics/en_per.json
+      - data/metrics/pa_per.json
     plots:
       - data/plots/per_vs_snr.png:
           cache: false

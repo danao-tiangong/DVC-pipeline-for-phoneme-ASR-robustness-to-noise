@@ -1,11 +1,15 @@
-import os, json, hashlib, subprocess, glob, shutil
+import os, json, hashlib, subprocess, glob, shutil, argparse
 import soundfile as sf
 import yaml
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--lang", required=True)
+args = parser.parse_args()
 
 with open("params.yaml") as f:
     params = yaml.safe_load(f)
 
-LANG = params["lang"]
+LANG = args.lang
 WAV_DIR = f"data/raw/{LANG}/wav"
 OUT_DIR = f"data/manifests/{LANG}"
 OUT_FILE = os.path.join(OUT_DIR, "clean.jsonl")

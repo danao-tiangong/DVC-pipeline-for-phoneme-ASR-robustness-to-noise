@@ -1,14 +1,18 @@
-import os, json, shutil
+import os, json, shutil, argparse
 import torch
 import soundfile as sf
 import numpy as np
 import yaml
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--lang", required=True)
+args = parser.parse_args()
+
 with open("params.yaml") as f:
     params = yaml.safe_load(f)
 
-LANG = params["lang"]
+LANG = args.lang
 MODEL_ID = params["model_id"]
 TARGET_SR = params["target_sr"]
 SNR_LEVELS = params["snr_levels"]
@@ -49,5 +53,7 @@ predict_manifest(f"{MANIFEST_DIR}/clean.jsonl", f"{PRED_DIR}/clean.jsonl")
 for snr in SNR_LEVELS:
     print(f"  SNR={snr}dB...")
     predict_manifest(f"{MANIFEST_DIR}/noisy_snr{snr}.jsonl", f"{PRED_DIR}/noisy_snr{snr}.jsonl")
-
 print("[run_inference] done")
+
+if __name__ == "__main__":
+    pass
