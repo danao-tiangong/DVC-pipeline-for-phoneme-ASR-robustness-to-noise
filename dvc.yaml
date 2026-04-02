@@ -1,0 +1,81 @@
+stages:
+  make_manifest:
+    cmd: python3 src/make_manifest.py
+    deps:
+      - src/make_manifest.py
+      - data/raw/en/wav
+    outs:
+      - data/manifests/en/clean.jsonl
+
+  add_noise:
+    cmd: python3 src/add_noise.py
+    deps:
+      - src/add_noise.py
+      - data/manifests/en/clean.jsonl
+    outs:
+      - data/manifests/en/noisy_snr0.jsonl
+      - data/manifests/en/noisy_snr5.jsonl
+      - data/manifests/en/noisy_snr10.jsonl
+      - data/manifests/en/noisy_snr15.jsonl
+      - data/manifests/en/noisy_snr20.jsonl
+      - data/manifests/en/noisy_snr25.jsonl
+      - data/manifests/en/noisy_snr30.jsonl
+      - data/manifests/en/noisy_snr35.jsonl
+      - data/manifests/en/noisy_snr40.jsonl
+      - data/manifests/en/noisy_snr45.jsonl
+
+  run_inference:
+    cmd: python3 src/run_inference.py
+    deps:
+      - src/run_inference.py
+      - data/manifests/en/clean.jsonl
+      - data/manifests/en/noisy_snr0.jsonl
+      - data/manifests/en/noisy_snr5.jsonl
+      - data/manifests/en/noisy_snr10.jsonl
+      - data/manifests/en/noisy_snr15.jsonl
+      - data/manifests/en/noisy_snr20.jsonl
+      - data/manifests/en/noisy_snr25.jsonl
+      - data/manifests/en/noisy_snr30.jsonl
+      - data/manifests/en/noisy_snr35.jsonl
+      - data/manifests/en/noisy_snr40.jsonl
+      - data/manifests/en/noisy_snr45.jsonl
+    outs:
+      - data/predictions/en/clean.jsonl
+      - data/predictions/en/noisy_snr0.jsonl
+      - data/predictions/en/noisy_snr5.jsonl
+      - data/predictions/en/noisy_snr10.jsonl
+      - data/predictions/en/noisy_snr15.jsonl
+      - data/predictions/en/noisy_snr20.jsonl
+      - data/predictions/en/noisy_snr25.jsonl
+      - data/predictions/en/noisy_snr30.jsonl
+      - data/predictions/en/noisy_snr35.jsonl
+      - data/predictions/en/noisy_snr40.jsonl
+      - data/predictions/en/noisy_snr45.jsonl
+
+  evaluate:
+    cmd: python3 src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - data/predictions/en/clean.jsonl
+      - data/predictions/en/noisy_snr0.jsonl
+      - data/predictions/en/noisy_snr5.jsonl
+      - data/predictions/en/noisy_snr10.jsonl
+      - data/predictions/en/noisy_snr15.jsonl
+      - data/predictions/en/noisy_snr20.jsonl
+      - data/predictions/en/noisy_snr25.jsonl
+      - data/predictions/en/noisy_snr30.jsonl
+      - data/predictions/en/noisy_snr35.jsonl
+      - data/predictions/en/noisy_snr40.jsonl
+      - data/predictions/en/noisy_snr45.jsonl
+    metrics:
+      - data/metrics/en_per.json:
+          cache: false
+
+  plot:
+    cmd: python3 src/plot_results.py
+    deps:
+      - src/plot_results.py
+      - data/metrics/en_per.json
+    plots:
+      - data/plots/per_vs_snr.png:
+          cache: false
