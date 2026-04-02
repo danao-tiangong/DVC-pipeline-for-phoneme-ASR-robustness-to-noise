@@ -1,6 +1,7 @@
-lang: en
+lang: pa
 langs:
   - en
+  - pa
 snr_levels: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
 n_samples: 50
 noise_seed: 42
