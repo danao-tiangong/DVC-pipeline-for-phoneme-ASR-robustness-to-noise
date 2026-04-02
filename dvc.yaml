@@ -97,6 +97,8 @@ stages:
       - langs
     deps:
       - src/plot_results.py
+      - data/metrics/en_per.json
+      - data/metrics/pa_per.json
     plots:
       - data/plots/per_vs_snr.png:
           cache: false
