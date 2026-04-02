@@ -2,8 +2,7 @@ stages:
   make_manifest:
     foreach: ${langs}
     do:
-      cmd: >-
-        python3 src/make_manifest.py --lang ${item}
+      cmd: python3 src/make_manifest.py --lang ${item}
       params:
         - snr_levels
         - noise_seed
@@ -98,8 +97,6 @@ stages:
       - langs
     deps:
       - src/plot_results.py
-      - data/metrics/en_per.json
-      - data/metrics/pa_per.json
     plots:
       - data/plots/per_vs_snr.png:
           cache: false
